@@ -1,5 +1,5 @@
 // unify-font-size.jsx
-// version: 1.0 | 2026-07-07 | Choo Liu
+// version: 1.1 | 2026-07-07 | Choo Liu
 // github.com/chooliu/AcademicIllustratorPlugins
 // unify text sizes in a specified point range to a single size
 // arguments:
@@ -16,7 +16,7 @@
 
     var minGrp = dlg.add("group"); minGrp.alignChildren = "right";
     minGrp.add("statictext", undefined, "min size (pt):");
-    var minInput = minGrp.add("edittext", undefined, "0.1");
+    var minInput = minGrp.add("edittext", undefined, "0.05");
     minInput.characters = 6;
 
     var maxGrp = dlg.add("group"); maxGrp.alignChildren = "right";
@@ -52,7 +52,7 @@
         return;
     }
     if (minSize > maxSize) {
-        alert("min size must be ≤ max size.");
+        alert("min size must be <= max size.");
         return;
     }
     if (targetSize <= 0) {
@@ -68,21 +68,36 @@
 
     var changed = 0;
     for (var i = 0; i < frames.length; i++) {
-        changed += unifyFontSize(frames[i], minSize, maxSize, targetSize);
+        try {
+            changed += unifyFontSize(frames[i], minSize, maxSize, targetSize);
+        } catch (e) {
+            // skip text frames with issues
+        }
     }
 
     app.redraw();
-    alert("changed " + changed + " text run(s) in range [" + minSize + "–" + maxSize + "pt] → " + targetSize + "pt.");
+    alert("changed " + changed + " text run(s) in range [" + minSize + "-" + maxSize + "pt] to " + targetSize + "pt.");
 
     function unifyFontSize(tf, minSz, maxSz, targetSz) {
         var count = 0;
-        var textRange = tf.textRange;
-        var len = textRange.length;
-        for (var i = 0; i < len; i++) {
-            var charSize = textRange.characters[i].fontSize;
-            if (charSize >= minSz && charSize <= maxSz) {
-                textRange.characters[i].fontSize = targetSz;
-                count++;
+        if (!tf || !tf.textRange) return 0;
+        var range = tf.textRange;
+        if (!range || range.length === 0) return 0;
+
+        // walk each character in the text frame
+        // note: font size lives on characterAttributes.size, not on the character object itself
+        for (var i = 0; i < range.length; i++) {
+            try {
+                var ch = range.characters[i];
+                if (ch && ch.characterAttributes) {
+                    var sz = ch.characterAttributes.size;
+                    if (sz >= minSz && sz <= maxSz) {
+                        ch.characterAttributes.size = targetSz;
+                        count++;
+                    }
+                }
+            } catch (e) {
+                // skip individual character issues
             }
         }
         return count;
