@@ -1,5 +1,5 @@
 // replace-minus-sign.jsx
-// version: 1.0 | 2026-07-08 | Choo Liu
+// version: 1.01 | 2026-07-08 | Choo Liu
 // github.com/chooliu/AcademicIllustratorPlugins
 // replace unicode minus sign (u+2212) with ascii hyphen (-)
 // (common issue via ggplot2 axis labels)
@@ -36,10 +36,10 @@
         var range = tf.textRange;
         if (!range || range.length === 0) return 0;
 
-        // walk each character in the text frame
-        for (var i = 0; i < range.length; i++) {
+        var chars = range.characters, n = chars.length;
+        for (var i = 0; i < n; i++) {
             try {
-                var ch = range.characters[i];
+                var ch = chars[i];
                 if (ch && ch.contents === UNICODE_MINUS) {
                     ch.contents = ASCII_HYPHEN;
                     count++;

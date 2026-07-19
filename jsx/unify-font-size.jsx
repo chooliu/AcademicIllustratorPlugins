@@ -1,5 +1,5 @@
 // unify-font-size.jsx
-// version: 1.1 | 2026-07-07 | Choo Liu
+// version: 1.02 | 2026-07-19 | Choo Liu
 // github.com/chooliu/AcademicIllustratorPlugins
 // unify text sizes in a specified point range to a single size
 // arguments:
@@ -84,15 +84,15 @@
         var range = tf.textRange;
         if (!range || range.length === 0) return 0;
 
-        // walk each character in the text frame
         // note: font size lives on characterAttributes.size, not on the character object itself
-        for (var i = 0; i < range.length; i++) {
+        var chars = range.characters, n = chars.length;
+        for (var i = 0; i < n; i++) {
             try {
-                var ch = range.characters[i];
-                if (ch && ch.characterAttributes) {
-                    var sz = ch.characterAttributes.size;
+                var ca = chars[i] && chars[i].characterAttributes;
+                if (ca) {
+                    var sz = ca.size;
                     if (sz >= minSz && sz <= maxSz) {
-                        ch.characterAttributes.size = targetSz;
+                        ca.size = targetSz;
                         count++;
                     }
                 }
